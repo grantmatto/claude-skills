@@ -26,19 +26,48 @@ plain language and it builds the MindStudio workflow/app for you.
 
 **MSFM = MindStudio-Flavored Markdown** — the spec format Remy uses.
 
-A MSFM spec is a structured markdown document that describes:
-- What the app does
-- What inputs it takes
-- What workflow steps it runs
-- What outputs it produces
+MSFM extends standard Markdown with annotations that attach precision to prose.
+**Dual-layer structure:**
+- **YAML frontmatter** — machine-readable fields (name, inputs, outputs, constraints)
+- **Markdown body** — human-readable prose with inline annotations
+
+This makes specs "a shared medium. Something both humans and agents can read, write,
+and reason about. Something that captures intent precisely enough to generate an
+implementation, and captures the implementation clearly enough to verify the intent."
+
+The format aligns with the broader ecosystem: Claude Code Sub Agents, GitHub Copilot
+Custom Agents all use markdown-based formats for agent definitions. MSFM is the Remy
+flavour of this emerging standard.
+
+### Application Contracts
+
+From an MSFM spec, Remy compiles an **application contract** — a single authoritative
+definition of the entire system: every method, every data model, every access rule.
+
+### Projections
+
+The contract then generates multiple **projections** — different interface renderings
+of the same underlying logic:
+
+> "The same application contract can be rendered as a web dashboard. As a REST API.
+> As an AI agent that takes actions on behalf of a user. As a voice interface.
+> Same methods, same data, same rules. We call these projections. Because the logic
+> lives in the contract (not in any individual projection), the projection can't break it."
+
+This means:
+- Web dashboard and REST API cannot diverge — both derive from the same contract
+- Add new interfaces without rebuilding the core
+- When the spec changes, ALL projections regenerate automatically
+- Prevents specification-code drift (the core failure mode of low-code platforms)
 
 From one MSFM spec, Remy can generate:
 - MindStudio AI agents/workflows
 - Web dashboards
 - REST APIs
+- Voice interfaces
 - Mobile apps
 
-If AI models improve, Remy can regenerate better code from the same spec automatically.
+If AI models improve, Remy regenerates better code from the same spec automatically.
 
 ---
 
@@ -130,13 +159,100 @@ Describe what the user receives.
 
 ---
 
+## Prompt vs Specification
+
+> *"A prompt tells the AI what to do in a specific moment. A specification tells the AI what you mean in every situation it might encounter."*
+
+**Example:**
+- ❌ Prompt: "Summarize this customer email and suggest a response"
+- ✅ Spec: decision trees for different scenarios, tone requirements, length limits, escalation rules
+
+A spec handles every case. A prompt handles one case.
+
+Remy is positioned as a **collaborator, not autocomplete:**
+> *"Code-level AI tools make you a faster programmer. Remy changes what programming means."*
+
+Because the spec is source of truth (not the code), Remy can make sweeping changes without fragility:
+rename a concept across the entire app → update spec → everything regenerates to match.
+
+**The alignment loss problem** (why specs matter more than prompts):
+Research on 600 rejected PRs found alignment loss during execution — not poor task descriptions —
+as the primary driver of agentic workflow failures. Agents receive accurate specs but produce code
+that fails because the spec doesn't update to reflect intermediate decisions. Remy's spec-as-truth
+model addresses this by keeping spec and implementation always in sync.
+
+---
+
+## The Core Principle
+
+> *"An AI cannot fix a flawed or ambiguous requirement; it can only instantiate that flaw with frightening efficiency."*
+> — StartupHub.ai, January 2026
+
+Remy shifts the bottleneck from coding to specification. The quality of the spec is
+the single most critical factor in what gets built. This is not optional precision —
+it's the entire discipline.
+
+**The paradigm shift:**
+- Old: execution efficiency (how fast can we write code?)
+- New: definition precision (how clearly can we specify intent?)
+
+The spec must be treated as software itself — tested, validated, version-controlled —
+before a single line of code is generated. Loose natural language → ambiguous output.
+Structured, precise specs → reliable, reproducible delivery.
+
+## The 5 Dimensions of Specification Precision
+
+Writing specs is the core skill. Each spec must address all five dimensions:
+
+1. **Scope** — what the app does AND doesn't do (explicit exclusions matter)
+2. **Format** — input/output data structure (types, shapes, constraints)
+3. **Constraints** — rules, limits, edge cases, validation, guardrails
+4. **Context** — who uses it, when, why, what they already know
+5. **Success criteria** — how you know it worked correctly
+
+Remy can only build what the spec captures. Vague specs → vague apps.
+
+**The Kiro (Amazon) philosophy:**
+Investment in the front-end requirements process yields exponential returns in the
+back-end coding phase. The spec is a high-leverage artifact — get it right first.
+
+---
+
+## MindStudio Infrastructure (Zero-Config)
+
+Remy builds on MindStudio's production infrastructure. All of this is available
+as zero-configuration SDK calls from within any Remy-built app:
+
+- **200+ AI models** (Claude, GPT-4o, Gemini, Llama, etc.)
+- **Managed databases** with automatic schema migrations
+- **Role-based authentication** built in
+- **1,000+ third-party integrations** (Zapier, Stripe, Slack, etc.)
+
+No setup, no API keys to manage, no infrastructure to provision.
+
+---
+
+## Agent Collaboration Model
+
+Remy supports two orchestration modes:
+1. **Structured visual workflows** — define exact steps (MindStudio block canvas)
+2. **LLM-driven reasoning** — for steps requiring judgment
+
+Multi-agent: one agent can call another, enabling specialisation without losing
+visibility into what's happening.
+
+---
+
 ## Known Limitations (Alpha)
 
-- Alpha stage — expect rough edges
+- **Alpha stage** — limited public access, no public pricing as of April 2026
 - Complex logic may need manual refinement in MindStudio canvas
 - Review all generated block configs before running
 - Test with simple inputs first
 - Run Code blocks may need configuration object setup (see mindstudio-expert skill)
+- **Unanswered questions**: spec completeness requirements for complex apps, debugging
+  when code is abstracted, customisation limits, platform lock-in risk
+- Significant marketing presence but limited technical documentation publicly available
 
 ---
 
@@ -150,10 +266,56 @@ Built agents can be embedded into airealestate.tech the same way.
 
 ---
 
+## Pricing
+
+**MindStudio platform pricing (as of April 2026):**
+
+| Tier | Cost | Includes |
+|------|------|---------|
+| Free | $0/month | 1 agent, 1,000 runs/month, 200+ models, BYOK |
+| Individual | $20/month ($16 annual) | Unlimited agents, unlimited runs, workshops, certifications |
+| Business | Custom | Team collaboration, SSO, audit logs, self-hosting, custom domains |
+
+**Remy-specific pricing: unknown.** No public pricing as of April 2026.
+
+**AI inference costs:** MindStudio charges exactly what model providers charge — no markup.
+Example: ~$0.011 for a single workflow run.
+
+**Economic case (MindStudio's own claims):**
+- Custom AI agent development: $75K-$500K, takes months
+- No-code platform alternative: $187K average annual savings
+- Note: these figures are for AI agent development, not full Remy app generation
+
+**Watch out for hidden costs:**
+- Ongoing AI inference as specs recompile with newer models (automatic improvement ≠ free)
+- Infrastructure/hosting (unclear if self-deployable or MindStudio-hosted only)
+- Scaling with traffic and data volume
+- Platform lock-in: if specs can't be compiled by alternative tools, migration is hard
+
+---
+
+## Competitive Context
+
+| Tool | Operates at | Primary artifact |
+|------|------------|-----------------|
+| GitHub Copilot | Code level | Code |
+| Cursor | Code level | Code |
+| Claude Code (Harry) | Code level | Code |
+| **Remy** | **Spec level** | **Specification** |
+
+Remy doesn't accelerate coding — it replaces code as the primary artifact.
+When AI models improve, Remy apps improve automatically because the spec is stable
+and the implementation layer regenerates beneath it.
+
+---
+
 ## Tips
 
 - Remy is best for greenfield — start fresh, describe the full thing
 - For fixes to existing agents, use Harry (Claude Code) + MindStudio canvas directly
-- Save Remy's output as an MSFM spec file — it's your portable spec
-- If Remy gets confused, start a new chat with a cleaner description
+- Save Remy's output as an MSFM spec file — it's your portable spec, not just a prompt
+- If Remy gets confused, start a new chat with a cleaner, more precise description
 - Ask Remy to use Haiku for cheap/simple steps and Sonnet for analysis
+- Version-control your MSFM specs in Git — they're the source of truth
+- When spec changes, expect full regeneration — don't manually patch generated code
+- Security note: ~45% of AI-generated code has security flaws (Veracode 2025) — review generated code, don't assume it's production-safe
